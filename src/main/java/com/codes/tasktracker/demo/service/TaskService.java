@@ -1,5 +1,6 @@
 package com.codes.tasktracker.demo.service;
 
+import com.codes.tasktracker.demo.exception.ResourceNotFoundException;
 import com.codes.tasktracker.demo.model.Task;
 import com.codes.tasktracker.demo.repository.TaskRepository;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,15 @@ public class TaskService {
         }
         return repository.save(task);
     }
+
+    // -- Metodo para eliminar
+    @Transactional
+    public void deleteTask(UUID id) {
+        Task task = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada: " + id));
+        repository.delete(task);
+    }
+
 
 
 }
