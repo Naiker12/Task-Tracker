@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,4 +35,14 @@ public class TaskController {
         Task task = service.getTask(id);
         return ResponseEntity.ok(task);
     }
+
+
+    @GetMapping
+    public ResponseEntity<List<Task>> listTasks() {
+        List<Task> tasks = service.listAllTasks();
+        return ResponseEntity.ok(tasks);
+    }
+
+
+
 }
