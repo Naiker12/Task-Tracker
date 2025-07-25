@@ -41,4 +41,17 @@ public class TaskService {
         return repository.findAll();
     }
 
+
+    // -- Metodo para actualizar --
+    @Transactional
+    public Task updateTask(UUID id, String description, Boolean completed) {
+        Task task = getTask(id);
+        task.setDescription(description);
+        if (completed != null && completed && !task.isCompleted()) {
+            task.markCompleted();
+        }
+        return repository.save(task);
+    }
+
+
 }

@@ -1,5 +1,6 @@
 package com.codes.tasktracker.demo.controller;
 
+import com.codes.tasktracker.demo.dto.TaskUpdateDto;
 import com.codes.tasktracker.demo.model.Task;
 import com.codes.tasktracker.demo.service.TaskService;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,13 @@ public class TaskController {
     public ResponseEntity<List<Task>> listTasks() {
         List<Task> tasks = service.listAllTasks();
         return ResponseEntity.ok(tasks);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> updateTask(@PathVariable UUID id,
+                                           @RequestBody TaskUpdateDto dto) {
+        Task updated = service.updateTask(id, dto.description(), dto.completed());
+        return ResponseEntity.ok(updated);
     }
 
 
