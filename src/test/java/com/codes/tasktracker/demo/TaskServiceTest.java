@@ -69,9 +69,29 @@ class TaskServiceTest {
         verify(repository).findById(fakeId);
     }
 
+    @Test
+    void markTaskCompleted_marksAndSaves() {
+        //Creamos un UUID ficticio y una tarea inicial sin completar
+        UUID taskId = UUID.randomUUID();
+        Task existing = new Task("Tarea pendiente"); // por defecto completed=false
+
+        // Simulamos que el repositorio devuelve esta tarea cuando se busca por ID
+        when(repository.findById(taskId)).thenReturn(Optional.of(existing));
+        // Simulamos que el repositorio devuelve la tarea actualizada al guardar
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Llamamos al método del servicio
+        service.markTaskCompleted(taskId);
+
+        // La tarea debe estar marcada como completada
+        assertThat(existing.isCompleted()).isTrue();
+
+        // Se debe haber guardado la tarea modificada en el repositorio
+        verify(repository).save(existing);
+    }
+
 
     // --- Casos siguientes (los agregamos después de validar este) ---
-    // @Test void markTaskCompleted_marksAndSaves() {}
     // @Test void updateTask_updatesDescriptionAndCompleted() {}
     // @Test void deleteTask_deletesExisting() {}
 }
