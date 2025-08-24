@@ -90,6 +90,23 @@ class TaskServiceTest {
         verify(repository).save(existing);
     }
 
+     @Test
+    void listAllTasks_returnsAllTasks() {
+        // Arrange: simulamos 2 tareas
+        Task t1 = new Task("Tarea 1");
+        Task t2 = new Task("Tarea 2");
+        when(repository.findAll()).thenReturn(java.util.List.of(t1, t2));
+
+        // Act
+        java.util.List<Task> result = service.listAllTasks();
+
+        // Assert
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Task::getDescription)
+                          .containsExactly("Tarea 1", "Tarea 2");
+        verify(repository).findAll();
+    }
+
 
     // --- Casos siguientes (los agregamos después de validar este) ---
     // @Test void updateTask_updatesDescriptionAndCompleted() {}
