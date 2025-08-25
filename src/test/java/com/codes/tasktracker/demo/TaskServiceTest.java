@@ -163,10 +163,18 @@ class TaskServiceTest {
         verify(repository).findById(id);
     }
 
-   
+    @Test
+    void deleteTask_deletesById() {
+     
+        UUID id = UUID.randomUUID();
+
+        
+        service.deleteTask(id);
+
+       
+        verify(repository).deleteById(id);
+    }
 
 
-    // --- Casos siguientes (los agregamos después de validar este) ---
-    // @Test void updateTask_updatesDescriptionAndCompleted() {}
-    // @Test void deleteTask_deletesExisting() {}
+    
 }
