@@ -92,20 +92,78 @@ class TaskServiceTest {
 
      @Test
     void listAllTasks_returnsAllTasks() {
-        // Arrange: simulamos 2 tareas
+       
         Task t1 = new Task("Tarea 1");
         Task t2 = new Task("Tarea 2");
         when(repository.findAll()).thenReturn(java.util.List.of(t1, t2));
 
-        // Act
+    
         java.util.List<Task> result = service.listAllTasks();
 
-        // Assert
+       
         assertThat(result).hasSize(2);
         assertThat(result).extracting(Task::getDescription)
                           .containsExactly("Tarea 1", "Tarea 2");
         verify(repository).findAll();
     }
+
+     @Test
+    void updateTask_updatesExistingTask() {
+        
+        UUID id = UUID.randomUUID();
+        Task existing = new Task("Vieja descripcion");
+        existing.setId(id);
+        existing.setCompleted(false);
+
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        
+        Task result = service.updateTask(id, "Nueva descripcion", true);
+
+       
+        assertThat(result.getDescription()).isEqualTo("Nueva descripcion");
+        assertThat(result.isCompleted()).isTrue();
+        verify(repository).save(existing);
+    }
+
+    
+    @Test
+    void updateTask_updatesExistingTask() {
+       
+        UUID id = UUID.randomUUID();
+        Task existing = new Task("Vieja descripcion");
+        existing.setId(id);
+        existing.setCompleted(false);
+
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        
+        Task result = service.updateTask(id, "Nueva descripcion", true);
+
+       
+        assertThat(result.getDescription()).isEqualTo("Nueva descripcion");
+        assertThat(result.isCompleted()).isTrue();
+        verify(repository).save(existing);
+    }
+
+    @Test
+    void updateTask_throwsIfNotFound() {
+       
+        UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+       
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.updateTask(id, "Nueva desc", true);
+        });
+
+       
+        verify(repository).findById(id);
+    }
+
+   
 
 
     // --- Casos siguientes (los agregamos después de validar este) ---
