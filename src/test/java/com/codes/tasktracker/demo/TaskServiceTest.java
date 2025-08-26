@@ -91,7 +91,44 @@ class TaskServiceTest {
     }
 
 
-    // --- Casos de brayan---
-    // @Test void updateTask_updatesDescriptionAndCompleted() {}
-    // @Test void deleteTask_deletesExisting() {}
-}
+    
+        java.util.List<Task> result = service.listAllTasks();
+
+       
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(Task::getDescription)
+                          .containsExactly("Tarea 1", "Tarea 2");
+        verify(repository).findAll();
+    }
+
+     @Test
+     void updateTask_updatesExistingTask() {
+        UUID id = UUID.randomUUID();
+        Task existing = new Task("Vieja descripcion");
+        existing.setId(id);
+        existing.setCompleted(false);
+
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Task result = service.updateTask(id, "Nueva descripcion", true);
+
+        assertThat(result.getDescription()).isEqualTo("Nueva descripcion");
+        assertThat(result.isCompleted()).isTrue();
+        verify(repository).save(existing);
+    }
+
+    @Test
+     void deleteTask_deletesById() {
+        UUID id = UUID.randomUUID();
+        Task existing = new Task("Para eliminar");
+        existing.setId(id);
+
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+
+        service.deleteTask(id);
+
+        verify(repository).delete(existing);
+    }
+
+
