@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TaskServiceTest {
+class TaskServiceTest  {
 
     @Mock
     TaskRepository repository;
@@ -34,79 +35,66 @@ class TaskServiceTest {
 
     @Test
     void createTask_createsAndSavesWithDefaults() {
-        // Arrange: devolvemos el mismo objeto que recibe el repository
         when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Task result = service.createTask("Primera tarea");
 
-        // Assert: se guardó con la descripción y completed=false
         verify(repository).save(taskCaptor.capture());
         Task saved = taskCaptor.getValue();
 
         assertThat(saved.getDescription()).isEqualTo("Primera tarea");
         assertThat(saved.isCompleted()).isFalse();
-
-        // El resultado que devuelve el servicio coincide
         assertThat(result.getDescription()).isEqualTo("Primera tarea");
         assertThat(result.isCompleted()).isFalse();
     }
 
     @Test
     void getTask_throwsWhenNotFound() {
-        // Preparamos el repositorio para que devuelva vacío (simula que no existe la tarea)
         UUID fakeId = UUID.randomUUID();
         when(repository.findById(fakeId)).thenReturn(Optional.empty());
 
-        // Aquí esperamos que el servicio lance una IllegalArgumentException
         Exception ex = assertThrows(IllegalArgumentException.class, () -> {
             service.getTask(fakeId);
         });
 
-        // Verificamos que el mensaje de la excepción contiene el texto esperado
         assertThat(ex.getMessage()).contains("Tarea no encontrada");
-
-        // Verificamos que el repositorio fue llamado con el ID correcto
         verify(repository).findById(fakeId);
     }
 
     @Test
     void markTaskCompleted_marksAndSaves() {
-        //Creamos un UUID ficticio y una tarea inicial sin completar
         UUID taskId = UUID.randomUUID();
-        Task existing = new Task("Tarea pendiente"); // por defecto completed=false
+        Task existing = new Task("Tarea pendiente"); // completed=false
 
-        // Simulamos que el repositorio devuelve esta tarea cuando se busca por ID
         when(repository.findById(taskId)).thenReturn(Optional.of(existing));
-        // Simulamos que el repositorio devuelve la tarea actualizada al guardar
         when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // Llamamos al método del servicio
         service.markTaskCompleted(taskId);
 
-        // La tarea debe estar marcada como completada
         assertThat(existing.isCompleted()).isTrue();
-
-        // Se debe haber guardado la tarea modificada en el repositorio
         verify(repository).save(existing);
     }
 
+    @Test
+    void listAllTasks_returnsAllTasks() {
+        List<Task> mockTasks = List.of(
+                new Task("Tarea 1"),
+                new Task("Tarea 2")
+        );
+        when(repository.findAll()).thenReturn(mockTasks);
 
-    
-        java.util.List<Task> result = service.listAllTasks();
+        List<Task> result = service.listAllTasks();
 
-       
         assertThat(result).hasSize(2);
         assertThat(result).extracting(Task::getDescription)
-                          .containsExactly("Tarea 1", "Tarea 2");
+                .containsExactly("Tarea 1", "Tarea 2");
         verify(repository).findAll();
     }
 
-     @Test
-     void updateTask_updatesExistingTask() {
+    @Test
+    void updateTask_updatesExistingTask() {
         UUID id = UUID.randomUUID();
         Task existing = new Task("Vieja descripcion");
-        existing.setId(id);
-        existing.setCompleted(false);
 
         when(repository.findById(id)).thenReturn(Optional.of(existing));
         when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -119,10 +107,9 @@ class TaskServiceTest {
     }
 
     @Test
-     void deleteTask_deletesById() {
+    void deleteTask_deletesById() {
         UUID id = UUID.randomUUID();
         Task existing = new Task("Para eliminar");
-        existing.setId(id);
 
         when(repository.findById(id)).thenReturn(Optional.of(existing));
 
@@ -130,5 +117,4 @@ class TaskServiceTest {
 
         verify(repository).delete(existing);
     }
-
-
+}
