@@ -1,5 +1,6 @@
 package com.codes.tasktracker.demo;
 
+import com.codes.tasktracker.demo.exception.ResourceNotFoundException; 
 import com.codes.tasktracker.demo.model.Task;
 import com.codes.tasktracker.demo.repository.TaskRepository;
 import com.codes.tasktracker.demo.service.TaskService;
@@ -108,16 +109,16 @@ class TaskServiceTest  {
 
     @Test
     void updateTask_throwsWhenTaskNotFound() {
-    UUID id = UUID.randomUUID();
-    when(repository.findById(id)).thenReturn(Optional.empty());
+        UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
 
-    Exception ex = assertThrows(IllegalArgumentException.class, () -> {
-        service.updateTask(id, "Nueva desc", true);
-    });
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            service.updateTask(id, "Nueva desc", true);
+        });
 
-    assertThat(ex.getMessage()).contains("Tarea no encontrada");
-    verify(repository).findById(id);
-}
+        assertThat(ex.getMessage()).contains("Tarea no encontrada");
+        verify(repository).findById(id);
+    }
 
     @Test
     void deleteTask_deletesById() {
@@ -134,11 +135,11 @@ class TaskServiceTest  {
     @Test
     void deleteTask_throwsWhenTaskNotFound() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(opcional.empty());
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () ->{
-            Service.deleteTask(id);
+        when(repository.findById(id)).thenReturn(Optional.empty());
 
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
+            service.deleteTask(id);
         });
 
         assertThat(ex.getMessage()).contains("Tarea no encontrada");
@@ -147,17 +148,16 @@ class TaskServiceTest  {
 
     @Test
     void updateTask_doesNotMarkCompletedWhenFlagIsFalse() {
-    UUID id = UUID.randomUUID();
-    Task existing = new Task("Descripcion inicial"); // por defecto isCompleted=false
+        UUID id = UUID.randomUUID();
+        Task existing = new Task("Descripcion inicial");
 
-    when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    Task result = service.updateTask(id, "Nueva descripcion", false);
+        Task result = service.updateTask(id, "Nueva descripcion", false);
 
-    assertThat(result.getDescription()).isEqualTo("Nueva descripcion");
-    assertThat(result.isCompleted()).isFalse(); // sigue pendiente
-    verify(repository).save(existing);
-}
-
+        assertThat(result.getDescription()).isEqualTo("Nueva descripcion");
+        assertThat(result.isCompleted()).isFalse();
+        verify(repository).save(existing);
+    }
 }
