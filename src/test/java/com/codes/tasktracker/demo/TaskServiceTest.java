@@ -135,11 +135,11 @@ class TaskServiceTest  {
     @Test
     void deleteTask_throwsWhenTaskNotFound() {
         UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(opcional.empty());
 
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        Exception ex = assertThrows(ResourceNotFoundException.class, () ->{
+            Service.deleteTask(id);
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
-            service.deleteTask(id);
         });
 
         assertThat(ex.getMessage()).contains("Tarea no encontrada");
