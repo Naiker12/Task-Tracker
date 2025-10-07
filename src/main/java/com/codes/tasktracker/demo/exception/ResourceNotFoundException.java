@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class ResourceNotFoundException extends RuntimeException {
 
     /**
-     * Constructs a new ResourceNotFoundException with the specified detail message.
+     * Constructs a new ResourceNotFoundException with the specified
+     * detail message.
      *
      * @param message The detail message.
      */
@@ -18,3 +19,5 @@ public class ResourceNotFoundException extends RuntimeException {
         super(message);
     }
 }
+
+

@@ -66,6 +66,14 @@ public final class Task {
     }
 
     /**
+     * Sets the task's ID.
+     * @param id The new ID.
+     */
+    public void setId(final UUID id) {
+        this.id = id;
+    }
+
+    /**
      * Returns the task's description.
      * @return The description.
      */

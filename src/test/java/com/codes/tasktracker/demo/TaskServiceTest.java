@@ -64,7 +64,7 @@ class TaskServiceTest {
         UUID fakeId = UUID.randomUUID();
         when(repository.findById(fakeId)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
             service.getTask(fakeId);
         });
 
@@ -124,7 +124,7 @@ class TaskServiceTest {
         UUID id = UUID.randomUUID();
         when(repository.findById(id)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
             service.updateTask(id, "Nueva desc", true);
         });
 
@@ -171,5 +171,56 @@ class TaskServiceTest {
         assertThat(result.getDescription()).isEqualTo("Nueva descripcion");
         assertThat(result.isCompleted()).isFalse();
         verify(repository).save(existing);
+    }
+
+    @Test
+    void getTaskReturnsTaskWhenFound() {
+        UUID id = UUID.randomUUID();
+        Task task = new Task("Tarea existente");
+        when(repository.findById(id)).thenReturn(Optional.of(task));
+
+        Task result = service.getTask(id);
+
+        assertThat(result).isEqualTo(task);
+        verify(repository).findById(id);
+    }
+
+    @Test
+    void updateTaskWithNullCompletedDoesNotChangeStatus() {
+        UUID id = UUID.randomUUID();
+        Task existing = new Task("Descripcion inicial");
+        existing.markCompleted(); // Start with completed = true
+
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Task result = service.updateTask(id, "Nueva descripcion", null);
+
+        assertThat(result.getDescription()).isEqualTo("Nueva descripcion");
+        assertThat(result.isCompleted()).isTrue(); // Should remain completed
+        verify(repository).save(existing);
+    }
+
+    @Test
+    void listAllTasksReturnsEmptyListWhenNoTasks() {
+        when(repository.findAll()).thenReturn(List.of());
+
+        List<Task> result = service.listAllTasks();
+
+        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
+        verify(repository).findAll();
+    }
+
+    @Test
+    void markTaskCompletedThrowsWhenNotFound() {
+        UUID id = UUID.randomUUID();
+        when(repository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            service.markTaskCompleted(id);
+        });
+
+        verify(repository).findById(id);
     }
 }

@@ -49,7 +49,7 @@ public final class TaskService {
      */
     public Task getTask(final UUID id) {
         return this.taskRepository.findById(id).orElseThrow(() ->
-                new IllegalArgumentException("Tarea no encontrada: " + id));
+                new ResourceNotFoundException("Tarea no encontrada: " + id));
     }
 
     /**

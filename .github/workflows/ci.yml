@@ -7,15 +7,14 @@ on:
     branches: [ main ]
 
 jobs:
- 
   super-linter:
     name: Super-Linter
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Run Super-Linter
@@ -23,32 +22,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || 'fake_token' }}
           DEFAULT_BRANCH: main
-
           VALIDATE_JAVA: true
           VALIDATE_MARKDOWN: true
           VALIDATE_YAML: true
           VALIDATE_JSON: true
-
-          
           DISABLE_ERRORS: false
           OUTPUT_DETAILS: detailed
           LOG_LEVEL: INFO
-          SUPPRESS_POSSUM: true 
+          SUPPRESS_POSSUM: true
 
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Set up JDK and Maven Cache
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Install Maven (para act)
-        run: sudo apt-get update && sudo apt-get install -y maven
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
 
       - name: Run Checkstyle
         run: mvn checkstyle:check || true
@@ -58,101 +52,63 @@ jobs:
     needs: lint
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Set up JDK and Maven Cache
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
 
-      - name: Install Maven (para act)
-        run: sudo apt-get update && sudo apt-get install -y maven
-
-      - name: Run tests with coverage
-        run: mvn clean test jacoco:report -B
-
-      - name: Verify coverage ≥ 90%
-        run: |
-          if [ ! -f target/site/jacoco/jacoco.xml ]; then
-            echo "No se generó jacoco.xml, se omite verificación"
-          else
-            MISSED=$(grep -oP 'missed="\K[0-9]+' target/site/jacoco/jacoco.xml | awk '{s+=$1} END {print s}')
-            COVERED=$(grep -oP 'covered="\K[0-9]+' target/site/jacoco/jacoco.xml | awk '{s+=$1} END {print s}')
-            TOTAL=$((COVERED + MISSED))
-            PERCENT=$((COVERED * 100 / TOTAL))
-            echo "Coverage: $PERCENT%"
-            if [ $PERCENT -lt 90 ]; then
-              echo "❌ Coverage menor al 90%"
-              exit 1
-            fi
-          fi
+      - name: Run tests and coverage check
+        run: mvn clean verify -B
 
       - name: Upload coverage report
-        if: ${{ env.ACT != 'true' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: target/site/jacoco/
-
-      - name: Save coverage locally (act only)
-        if: ${{ env.ACT == 'true' }}
-        run: |
-          mkdir -p artifacts
-          if [ -d target/site/jacoco ]; then
-            cp -r target/site/jacoco artifacts/
-          else
-            echo "No hay reportes Jacoco, se omite el paso"
-          fi
 
   build:
     runs-on: ubuntu-latest
     needs: test
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Set up JDK and Maven Cache
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Install Maven (para act)
-        run: sudo apt-get update && sudo apt-get install -y maven
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
 
       - name: Package app
         run: mvn clean package -DskipTests
 
       - name: Upload JAR
-        if: ${{ env.ACT != 'true' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: task-tracker-jar
           path: target/*.jar
-
-      - name: Save JAR locally (act only)
-        if: ${{ env.ACT == 'true' }}
-        run: |
-          mkdir -p artifacts
-          cp target/*.jar artifacts/ || true
 
   docker:
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
