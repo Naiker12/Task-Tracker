@@ -20,6 +20,12 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      - name: Install Maven (for local act runs)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y maven
+
       - name: Run Checkstyle, tests, and package
         run: mvn clean verify -B -Dcheckstyle.failOnViolation=false
 
@@ -47,7 +53,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.MY_GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
