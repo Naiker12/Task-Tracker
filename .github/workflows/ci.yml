@@ -1,4 +1,4 @@
-name: CI - Task Tracker
+name: CI - Task Tracker [1]
 
 on:
   push:
