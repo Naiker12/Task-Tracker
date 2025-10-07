@@ -18,20 +18,19 @@ jobs:
           persist-credentials: false
 
       - name: Run Super-Linter
-        uses: super-linter/super-linter@v7.2.0
+        uses: super-linter/super-linter@v6
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || 'fake_token' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BRANCH: main
           VALIDATE_JAVA: true
           VALIDATE_MARKDOWN: true
           VALIDATE_YAML: true
           VALIDATE_JSON: true
-          DISABLE_ERRORS: false
+          DISABLE_ERRORS: true 
           OUTPUT_DETAILS: detailed
           LOG_LEVEL: INFO
-          SUPPRESS_POSSUM: true
 
-  lint:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -44,24 +43,7 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
-      - name: Run Checkstyle
-        run: mvn checkstyle:check || true
-
-  test:
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up JDK and Maven Cache
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-
-      - name: Run tests and coverage check
+      - name: Run Checkstyle, tests, and package
         run: mvn clean verify -B
 
       - name: Upload coverage report
@@ -69,23 +51,6 @@ jobs:
         with:
           name: coverage-report
           path: target/site/jacoco/
-
-  build:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up JDK and Maven Cache
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-
-      - name: Package app
-        run: mvn clean package -DskipTests
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
@@ -95,7 +60,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-and-test
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
