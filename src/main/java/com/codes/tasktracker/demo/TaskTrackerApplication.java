@@ -5,11 +5,23 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
+/**
+ * Main application class.
+ */
+@SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @ComponentScan(basePackages = "com.codes.tasktracker.demo")
-public class TaskTrackerApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(TaskTrackerApplication.class, args);
-	}
-}
+public final class TaskTrackerApplication {
 
+    private TaskTrackerApplication() {
+        // Private constructor to hide the implicit public one
+    }
+
+    /**
+     * Main method.
+     *
+     * @param args The command line arguments.
+     */
+    public static void main(final String[] args) {
+        SpringApplication.run(TaskTrackerApplication.class, args);
+    }
+}

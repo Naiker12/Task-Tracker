@@ -21,12 +21,19 @@ jobs:
       - name: Run Super-Linter
         uses: super-linter/super-linter@v7.2.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN || 'fake_token' }}
+          DEFAULT_BRANCH: main
+
           VALIDATE_JAVA: true
           VALIDATE_MARKDOWN: true
           VALIDATE_YAML: true
           VALIDATE_JSON: true
+
+          
+          DISABLE_ERRORS: false
+          OUTPUT_DETAILS: detailed
+          LOG_LEVEL: INFO
+          SUPPRESS_POSSUM: true 
 
   lint:
     runs-on: ubuntu-latest

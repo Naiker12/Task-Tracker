@@ -9,59 +9,101 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Service for task-related operations.
+ */
 @Service
-public class TaskService {
+public final class TaskService {
 
-    private final TaskRepository repository;
+    /**
+     * The task repository.
+     */
+    private final TaskRepository taskRepository;
 
-    public TaskService(TaskRepository repository) {
-        this.repository = repository;
+    /**
+     * Constructs a new TaskService with the given repository.
+     *
+     * @param taskRepository The task repository.
+     */
+    public TaskService(final TaskRepository taskRepository) {
+        this.taskRepository = taskRepository;
     }
 
+    /**
+     * Creates a new task.
+     *
+     * @param description The description of the task.
+     * @return The created task.
+     */
     @Transactional
-    public Task createTask(String description) {
+    public Task createTask(final String description) {
         Task task = new Task(description);
-        return repository.save(task);
+        return this.taskRepository.save(task);
     }
 
-    public Task getTask(UUID id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada: " + id));
+    /**
+     * Retrieves a task by its ID.
+     *
+     * @param id The ID of the task.
+     * @return The task.
+     */
+    public Task getTask(final UUID id) {
+        return this.taskRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("Tarea no encontrada: " + id));
     }
 
-    // --- Método para ejemplo de marca completada ---
+    /**
+     * Marks a task as completed.
+     *
+     * @param id The ID of the task to mark as completed.
+     */
     @Transactional
-    public void markTaskCompleted(UUID id) {
+    public void markTaskCompleted(final UUID id) {
         Task task = getTask(id);
         task.markCompleted();
-        repository.save(task);
+        this.taskRepository.save(task);
     }
 
-    // -- Metedo para lista tarea ---
+    /**
+     * Lists all tasks.
+     *
+     * @return A list of all tasks.
+     */
     public List<Task> listAllTasks() {
-        return repository.findAll();
+        return this.taskRepository.findAll();
     }
 
-
-    // -- Metodo para actualizar --
+    /**
+     * Updates a task.
+     *
+     * @param id          The ID of the task to update.
+     * @param description The new description.
+     * @param completed   The new completion status.
+     * @return The updated task.
+     */
     @Transactional
-    public Task updateTask(UUID id, String description, Boolean completed) {
+    public Task updateTask(
+            final UUID id,
+            final String description,
+            final Boolean completed) {
+
         Task task = getTask(id);
         task.setDescription(description);
         if (completed != null && completed && !task.isCompleted()) {
             task.markCompleted();
         }
-        return repository.save(task);
+        return this.taskRepository.save(task);
     }
 
-    // -- Metodo para eliminar
+    /**
+     * Deletes a task.
+     *
+     * @param id The ID of the task to delete.
+     */
     @Transactional
-    public void deleteTask(UUID id) {
-        Task task = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Tarea no encontrada: " + id));
-        repository.delete(task);
+    public void deleteTask(final UUID id) {
+        Task task = this.taskRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Tarea no encontrada: " + id));
+        this.taskRepository.delete(task);
     }
-
-
-
 }

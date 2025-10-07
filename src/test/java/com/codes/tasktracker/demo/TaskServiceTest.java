@@ -1,6 +1,6 @@
 package com.codes.tasktracker.demo;
 
-import com.codes.tasktracker.demo.exception.ResourceNotFoundException; 
+import com.codes.tasktracker.demo.exception.ResourceNotFoundException;
 import com.codes.tasktracker.demo.model.Task;
 import com.codes.tasktracker.demo.repository.TaskRepository;
 import com.codes.tasktracker.demo.service.TaskService;
@@ -23,20 +23,30 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TaskServiceTest  {
+class TaskServiceTest {
 
+    /**
+     * Mock for the task repository.
+     */
     @Mock
-    TaskRepository repository;
+    private TaskRepository repository;
 
+    /**
+     * The service under test.
+     */
     @InjectMocks
-    TaskService service;
+    private TaskService service;
 
+    /**
+     * Captor for task arguments.
+     */
     @Captor
-    ArgumentCaptor<Task> taskCaptor;
+    private ArgumentCaptor<Task> taskCaptor;
 
     @Test
-    void createTask_createsAndSavesWithDefaults() {
-        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+    void createTaskCreatesAndSavesWithDefaults() {
+        when(repository.save(any(Task.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         Task result = service.createTask("Primera tarea");
 
@@ -50,7 +60,7 @@ class TaskServiceTest  {
     }
 
     @Test
-    void getTask_throwsWhenNotFound() {
+    void getTaskThrowsWhenNotFound() {
         UUID fakeId = UUID.randomUUID();
         when(repository.findById(fakeId)).thenReturn(Optional.empty());
 
@@ -63,12 +73,13 @@ class TaskServiceTest  {
     }
 
     @Test
-    void markTaskCompleted_marksAndSaves() {
+    void markTaskCompletedMarksAndSaves() {
         UUID taskId = UUID.randomUUID();
         Task existing = new Task("Tarea pendiente"); // completed=false
 
         when(repository.findById(taskId)).thenReturn(Optional.of(existing));
-        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.save(any(Task.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         service.markTaskCompleted(taskId);
 
@@ -77,7 +88,7 @@ class TaskServiceTest  {
     }
 
     @Test
-    void listAllTasks_returnsAllTasks() {
+    void listAllTasksReturnsAllTasks() {
         List<Task> mockTasks = List.of(
                 new Task("Tarea 1"),
                 new Task("Tarea 2")
@@ -93,12 +104,13 @@ class TaskServiceTest  {
     }
 
     @Test
-    void updateTask_updatesExistingTask() {
+    void updateTaskUpdatesExistingTask() {
         UUID id = UUID.randomUUID();
         Task existing = new Task("Vieja descripcion");
 
         when(repository.findById(id)).thenReturn(Optional.of(existing));
-        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.save(any(Task.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         Task result = service.updateTask(id, "Nueva descripcion", true);
 
@@ -108,7 +120,7 @@ class TaskServiceTest  {
     }
 
     @Test
-    void updateTask_throwsWhenTaskNotFound() {
+    void updateTaskThrowsWhenTaskNotFound() {
         UUID id = UUID.randomUUID();
         when(repository.findById(id)).thenReturn(Optional.empty());
 
@@ -121,7 +133,7 @@ class TaskServiceTest  {
     }
 
     @Test
-    void deleteTask_deletesById() {
+    void deleteTaskDeletesById() {
         UUID id = UUID.randomUUID();
         Task existing = new Task("Para eliminar");
 
@@ -133,13 +145,12 @@ class TaskServiceTest  {
     }
 
     @Test
-    void deleteTask_throwsWhenTaskNotFound() {
+    void deleteTaskThrowsWhenTaskNotFound() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(opcional.empty());
+        when(repository.findById(id)).thenReturn(Optional.empty());
 
-        Exception ex = assertThrows(ResourceNotFoundException.class, () ->{
-            Service.deleteTask(id);
-
+        Exception ex = assertThrows(ResourceNotFoundException.class, () -> {
+            service.deleteTask(id);
         });
 
         assertThat(ex.getMessage()).contains("Tarea no encontrada");
@@ -147,12 +158,13 @@ class TaskServiceTest  {
     }
 
     @Test
-    void updateTask_doesNotMarkCompletedWhenFlagIsFalse() {
+    void updateTaskDoesNotMarkCompletedWhenFlagIsFalse() {
         UUID id = UUID.randomUUID();
         Task existing = new Task("Descripcion inicial");
 
         when(repository.findById(id)).thenReturn(Optional.of(existing));
-        when(repository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.save(any(Task.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         Task result = service.updateTask(id, "Nueva descripcion", false);
 
